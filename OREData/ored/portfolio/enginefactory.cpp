@@ -16,10 +16,10 @@
  FITNESS FOR A PARTICULAR PURPOSE. See the license for more details.
 */
 
-#include <ored/portfolio/enginefactory.hpp>
-#include <ored/portfolio/builders/all.hpp>
-#include <ored/utilities/log.hpp>
 #include <boost/make_shared.hpp>
+#include <ored/portfolio/builders/all.hpp>
+#include <ored/portfolio/enginefactory.hpp>
+#include <ored/utilities/log.hpp>
 
 namespace ore {
 namespace data {
@@ -58,6 +58,14 @@ boost::shared_ptr<EngineBuilder> EngineFactory::builder(const string& tradeType)
     return builder;
 }
 
+Disposable<set<boost::shared_ptr<ModelBuilder>>> EngineFactory::modelBuilders() const {
+    set<boost::shared_ptr<ModelBuilder>> res;
+    for (auto const& b : builders_) {
+        res.insert(b.second->modelBuilders().begin(), b.second->modelBuilders().end());
+    }
+    return res;
+}
+
 void EngineFactory::addDefaultBuilders() {
     registerBuilder(boost::make_shared<SwapEngineBuilder>());
     registerBuilder(boost::make_shared<SwapEngineBuilderOptimised>());
@@ -71,6 +79,11 @@ void EngineFactory::addDefaultBuilders() {
 
     registerBuilder(boost::make_shared<CapFloorEngineBuilder>());
     registerBuilder(boost::make_shared<CapFlooredIborLegEngineBuilder>());
+
+    registerBuilder(boost::make_shared<EquityForwardEngineBuilder>());
+    registerBuilder(boost::make_shared<EquityOptionEngineBuilder>());
+
+    registerBuilder(boost::make_shared<BondDiscountingEngineBuilder>());
 }
 
 } // namespace data
